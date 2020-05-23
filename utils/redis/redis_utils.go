@@ -10,16 +10,20 @@ const redisHost = "localhost"
 const redisPort = "6379"
 const redisPass = ""
 const redisDBId = 0
-var ctx = context.Background()
-var client = newClient()
+var ctx context.Context
+var client *r.Client
+
+func init() {
+	ctx = context.Background()
+	client = newClient()
+}
 
 func newClient() *r.Client {
-	Client := r.NewClient(&r.Options{
+	return r.NewClient(&r.Options{
 		Addr:     redisHost + ":" + redisPort,
 		Password: redisPass,
 		DB:       redisDBId,
 	})
-	return Client
 }
 
 func Ping() *r.StatusCmd {
