@@ -23,5 +23,8 @@
 /vendor/
 /Godeps/
 
+### IDE ###
+.idea/
+
 # End of https://www.gitignore.io/api/go
 
