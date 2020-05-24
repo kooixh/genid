@@ -5,6 +5,7 @@ const RedisPort = "6379"
 const RedisPass = ""
 const RedisDBId = 0
 const RedisErrorCode = 2
+const RedisErrorUnknownTypeCode = 3
 
 const OffsetKey = "offset"
 const TotalKey = "total"

@@ -32,21 +32,15 @@ func Calibrate(offset int, initial int, total int, idType string, refillChannel 
 }
 
 func Refill(finished chan int) {
-	offset, err := redis.Get(c.OffsetKey).Int()
-	if err != nil {
-		finished <- c.RedisErrorCode
-	}
-	total, err := redis.Get(c.TotalKey).Int()
-	if err != nil {
-		finished <- c.RedisErrorCode
-	}
-	initial, err := redis.Get(c.InitialKey).Int()
-	if err != nil {
+
+	offset, errOffset := redis.Get(c.OffsetKey).Int()
+	total, errTotal := redis.Get(c.TotalKey).Int()
+	initial, errInitial := redis.Get(c.InitialKey).Int()
+	if errOffset != nil || errTotal != nil || errInitial != nil {
 		finished <- c.RedisErrorCode
 	}
 
 	rawIds := utils.GenerateNewIdSet(total, offset, initial)
-
 
 	generatorType := redis.Get(c.GeneratorTypeKey).Val()
 	var generator g.Generator
@@ -56,7 +50,7 @@ func Refill(finished chan int) {
 		generator = new(g.NumericIdGenerator)
 	} else {
 		fmt.Println("error, generator type is unknown")
-		finished <- 1
+		finished <- c.RedisErrorUnknownTypeCode
 	}
 
 	generatedIds := generator.Generate(rawIds)
@@ -67,4 +61,3 @@ func Refill(finished chan int) {
 	redis.Set(c.OffsetKey, offset + 1)
 	finished <- 0
 }
-
