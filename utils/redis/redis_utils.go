@@ -40,3 +40,11 @@ func Get(key string) *r.StringCmd {
 func RPush(key string, value interface{}) *r.IntCmd {
 	return client.RPush(ctx, key, value)
 }
+
+func LPop(key string) *r.StringCmd {
+	return client.LPop(ctx, key)
+}
+
+func Length(key string) *r.IntCmd {
+	return client.LLen(ctx, key)
+}

@@ -1,34 +1,46 @@
 package app
 
 import (
-	"errors"
 	"fmt"
+	c "github.com/kooixh/genid/pkg/constants"
 	"github.com/kooixh/genid/utils"
 	"github.com/kooixh/genid/utils/redis"
-	c "github.com/kooixh/genid/pkg/constants"
 )
 
-func Calibrate(offset int, initial int, total int) {
+func GenerateNewId(idChannel chan string, refillChannel chan int) {
+	ids := redis.LPop(c.IdListKey)
+	refillThreshold, err := redis.Get(c.IdListKey).Int()
+	if err != nil {
+		refillThreshold = 10
+	}
+	if int(redis.Length(c.IdListKey).Val()) < refillThreshold {
+		go Refill(refillChannel)
+	} else {
+		idChannel <- ids.Val()
+		refillChannel <- 0
+	}
+}
+
+func Calibrate(offset int, initial int, total int, refillChannel chan int) {
 	redis.Set(c.OffsetKey, offset)
 	redis.Set(c.InitialKey, initial)
 	redis.Set(c.TotalKey, total)
+	go Refill(refillChannel)
+
 }
 
-func Refill(finished chan int) (int, error) {
+func Refill(finished chan int) {
 	offset, err := redis.Get(c.OffsetKey).Int()
 	if err != nil {
 		finished <- c.RedisErrorCode
-		return 2, errors.New("unable to retrieve offset")
 	}
 	total, err := redis.Get(c.TotalKey).Int()
 	if err != nil {
 		finished <- c.RedisErrorCode
-		return 2, errors.New("unable to retrieve total")
 	}
 	initial, err := redis.Get(c.InitialKey).Int()
 	if err != nil {
 		finished <- c.RedisErrorCode
-		return 2, errors.New("unable to retrieve initial number")
 	}
 
 	rawIds := utils.GenerateNewIdSet(total, offset, initial)
@@ -40,6 +52,5 @@ func Refill(finished chan int) (int, error) {
 	redis.Set(c.OffsetKey, offset + 1)
 
 	finished <- 0
-	return 0, nil
 }
 
