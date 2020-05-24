@@ -8,6 +8,23 @@ import (
 	"github.com/kooixh/genid/utils/redis"
 )
 
+type CalibrationSettings struct {
+	Initial int
+	Offset int
+	Total int
+	IdType string
+}
+
+func (cal *CalibrationSettings) Validate() (bool, string) {
+	if cal.IdType != c.GeneratorTypeAlphaNum && cal.IdType != c.GeneratorTypeNum {
+		return false, "Error value in --type, (alphanum or num)"
+	}
+	if cal.Total > cal.Initial {
+		return false, "Error value in --total, cannot be greater than initial"
+	}
+	return true, ""
+}
+
 func GenerateNewId(idChannel chan string, refillChannel chan int) {
 	ids := redis.LPop(c.IdListKey)
 	refillThreshold, err := redis.Get(c.IdListKey).Int()
@@ -22,11 +39,11 @@ func GenerateNewId(idChannel chan string, refillChannel chan int) {
 	}
 }
 
-func Calibrate(offset int, initial int, total int, idType string, refillChannel chan int) {
-	redis.Set(c.OffsetKey, offset)
-	redis.Set(c.InitialKey, initial)
-	redis.Set(c.TotalKey, total)
-	redis.Set(c.GeneratorTypeKey, idType)
+func Calibrate(cal CalibrationSettings, refillChannel chan int) {
+	redis.Set(c.OffsetKey, cal.Offset)
+	redis.Set(c.InitialKey, cal.Initial)
+	redis.Set(c.TotalKey, cal.Total)
+	redis.Set(c.GeneratorTypeKey, cal.IdType)
 	go Refill(refillChannel)
 
 }

@@ -9,8 +9,7 @@ import (
 )
 
 func main() {
-	fmt.Println("Genid Id Genertion System")
-
+	fmt.Println("Genid Id Generation System")
 
 	parser := ap.NewParser("main", "Configuration provided for core genid")
 	calibrate := parser.Flag("c", "calibrate", &ap.Options{Required: false, Help: "Initiate calibration"})
@@ -29,26 +28,26 @@ func main() {
 
 	refillChannel := make(chan int)
 	if *calibrate {
-		if *idType != c.GeneratorTypeAlphaNum && *idType != c.GeneratorTypeNum {
-			fmt.Println("Error value in --type, (alphanum or num)")
-			os.Exit(1)
-			return
+		settings := core.CalibrationSettings{
+			Initial: *initial,
+			Offset: c.InitialOffset,
+			Total: *total,
+			IdType: *idType,
 		}
-		if *total > *initial {
-			fmt.Println("Error value in --total, cannot be greater than initial")
+		validate, msg := settings.Validate()
+		if !validate {
+			fmt.Println(msg)
 			os.Exit(1)
-			return
 		}
-		core.Calibrate(c.InitialOffset, *initial, *total, *idType, refillChannel)
+		core.Calibrate(settings, refillChannel)
 		exit := <-refillChannel
 		os.Exit(exit)
-		return
 	} else if *refill {
 		go core.Refill(refillChannel)
 		exit := <-refillChannel
 		os.Exit(exit)
-		return
 	}
+
 	idChannel := make(chan string)
 	go core.GenerateNewId(idChannel, refillChannel)
 	fmt.Println("id generated is " + <-idChannel)
