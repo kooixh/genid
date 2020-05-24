@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	c "github.com/kooixh/genid/pkg/constants"
+	g "github.com/kooixh/genid/pkg/generators"
 	"github.com/kooixh/genid/utils"
 	"github.com/kooixh/genid/utils/redis"
 )
@@ -21,10 +22,11 @@ func GenerateNewId(idChannel chan string, refillChannel chan int) {
 	}
 }
 
-func Calibrate(offset int, initial int, total int, refillChannel chan int) {
+func Calibrate(offset int, initial int, total int, idType string, refillChannel chan int) {
 	redis.Set(c.OffsetKey, offset)
 	redis.Set(c.InitialKey, initial)
 	redis.Set(c.TotalKey, total)
+	redis.Set(c.GeneratorTypeKey, idType)
 	go Refill(refillChannel)
 
 }
@@ -44,13 +46,25 @@ func Refill(finished chan int) {
 	}
 
 	rawIds := utils.GenerateNewIdSet(total, offset, initial)
-	alphaNumIds := utils.ConvertAlphaNumeric(rawIds)
-	for _, elem := range alphaNumIds {
+
+
+	generatorType := redis.Get(c.GeneratorTypeKey).Val()
+	var generator g.Generator
+	if generatorType == c.GeneratorTypeAlphaNum {
+		generator = new(g.AlphaNumericIdGenerator)
+	} else if generatorType == c.GeneratorTypeNum {
+		generator = new(g.NumericIdGenerator)
+	} else {
+		fmt.Println("error, generator type is unknown")
+		finished <- 1
+	}
+
+	generatedIds := generator.Generate(rawIds)
+	for _, elem := range generatedIds {
 		redis.RPush(c.IdListKey, elem)
 	}
 	fmt.Println("generation done, increasing offset")
 	redis.Set(c.OffsetKey, offset + 1)
-
 	finished <- 0
 }
 

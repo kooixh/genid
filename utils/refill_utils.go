@@ -6,7 +6,6 @@ import (
 	"time"
 )
 
-
 func GenerateNewIdSet(totalToGenerate int, offset int, initial int) []int64 {
 	var inputs []int64
 	for i := 1; i <= totalToGenerate; i++ {
@@ -21,7 +20,6 @@ func ConvertAlphaNumeric(inputs []int64) []string {
 		alphaNumericResult = append(alphaNumericResult, strconv.FormatInt(elem, 36))
 	}
 	return Shuffle(alphaNumericResult)
-
 }
 
 func Shuffle(inputs []string) []string {

@@ -1,33 +1,32 @@
 package generators
 
 import (
-	"fmt"
-	"math/rand"
+	"github.com/kooixh/genid/utils"
 	"strconv"
-	"time"
 )
 
 type Generator interface {
-	Generate() string
+	Generate(ids []int64) []string
 }
 
 type NumericIdGenerator struct {
-	Prefix string
-	Suffix string
 }
 
-func (gen *NumericIdGenerator) Generate() string {
-	epoch := time.Now().Unix()
-	rand.Seed(epoch)
-	randomInt := rand.Intn(998) + 1
-	return gen.Prefix + strconv.Itoa(int(epoch)) + fmt.Sprintf("%03d", randomInt) + gen.Suffix
+func (gen *NumericIdGenerator) Generate(ids []int64) []string {
+	var alphaNumericResult []string
+	for _, elem := range ids {
+		alphaNumericResult = append(alphaNumericResult, strconv.FormatInt(elem, 10))
+	}
+	return utils.Shuffle(alphaNumericResult)
 }
 
 type AlphaNumericIdGenerator struct {
-	Prefix string
-	Suffix string
 }
 
-func (gen *AlphaNumericIdGenerator) Generate() string {
-	return "ABC123"
+func (gen *AlphaNumericIdGenerator) Generate(ids []int64) []string {
+	var alphaNumericResult []string
+	for _, elem := range ids {
+		alphaNumericResult = append(alphaNumericResult, strconv.FormatInt(elem, 36))
+	}
+	return utils.Shuffle(alphaNumericResult)
 }
