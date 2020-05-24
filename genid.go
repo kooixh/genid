@@ -10,6 +10,8 @@ import (
 
 func main() {
 	fmt.Println("Genid Id Genertion System")
+
+
 	parser := ap.NewParser("main", "Configuration provided for core genid")
 	calibrate := parser.Flag("c", "calibrate", &ap.Options{Required: false, Help: "Initiate calibration"})
 	refill := parser.Flag("r", "refill", &ap.Options{Required: false, Help: "Refill ids"})
@@ -17,7 +19,7 @@ func main() {
 		Default: 100})
 	total  := parser.Int("", "total", &ap.Options{Required: false, Help: "Total number stored each refill",
 		Default: 100})
-	idType := parser.String("t", "type", &ap.Options{Required: false, Help: "Type of id to generate (alphanum, num)",
+	idType := parser.String("t", "type", &ap.Options{Required: false, Help: "Type of id to generate (alphanum, num). Default alphanum",
 		Default: c.GeneratorTypeAlphaNum})
 	err := parser.Parse(os.Args)
 	if err != nil {
