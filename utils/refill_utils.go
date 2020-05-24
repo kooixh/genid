@@ -2,7 +2,6 @@ package utils
 
 import (
 	"math/rand"
-	"strconv"
 	"time"
 )
 
@@ -12,14 +11,6 @@ func GenerateNewIdSet(totalToGenerate int, offset int, initial int) []int64 {
 		inputs = append(inputs, int64((offset * initial) + i))
 	}
 	return inputs
-}
-
-func ConvertAlphaNumeric(inputs []int64) []string {
-	var alphaNumericResult []string
-	for _, elem := range inputs {
-		alphaNumericResult = append(alphaNumericResult, strconv.FormatInt(elem, 36))
-	}
-	return Shuffle(alphaNumericResult)
 }
 
 func Shuffle(inputs []string) []string {

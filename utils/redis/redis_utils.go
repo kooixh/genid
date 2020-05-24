@@ -3,12 +3,9 @@ package redis
 import (
 	"context"
 	r "github.com/go-redis/redis/v8"
+	c "github.com/kooixh/genid/pkg/constants"
 )
 
-const redisHost = "localhost"
-const redisPort = "6379"
-const redisPass = ""
-const redisDBId = 0
 var ctx context.Context
 var client *r.Client
 
@@ -19,9 +16,9 @@ func init() {
 
 func newClient() *r.Client {
 	return r.NewClient(&r.Options{
-		Addr:     redisHost + ":" + redisPort,
-		Password: redisPass,
-		DB:       redisDBId,
+		Addr:     c.RedisHost + ":" + c.RedisPort,
+		Password: c.RedisPass,
+		DB:       c.RedisDBId,
 	})
 }
 
