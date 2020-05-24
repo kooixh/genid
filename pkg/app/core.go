@@ -34,9 +34,9 @@ func GenerateNewId(idChannel chan string, refillChannel chan int) {
 	if int(redis.Length(c.IdListKey).Val()) < refillThreshold {
 		go Refill(refillChannel)
 	} else {
-		idChannel <- ids.Val()
 		refillChannel <- 0
 	}
+	idChannel <- ids.Val()
 }
 
 func Calibrate(cal CalibrationSettings, refillChannel chan int) {
