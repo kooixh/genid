@@ -98,18 +98,15 @@ func CheckIsCalibrated() bool {
 }
 
 func ReturnAppInfo() (*CoreInfo, error) {
-	var info *CoreInfo
-	info = new(CoreInfo)
+	var info = new(CoreInfo)
 	status := redis.Get(c.CalibratedKey)
-	var statValue string
 	if status.Err() != nil {
-		statValue = c.NotCalibrated
+		info.Status = c.NotCalibrated
 	} else {
-		statValue = c.Calibrated
+		info.Status = c.Calibrated
 	}
-	info.Status = statValue
 	info.Version = coreAppVersion
-	if statValue == c.NotCalibrated {
+	if info.Status == c.NotCalibrated {
 		return info, nil
 	}
 	settings, err := retrieveCalibrationSettings()
