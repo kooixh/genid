@@ -19,7 +19,7 @@ $ redis-server
 ## Run
 
 ```
-go run genid.go --help
+$ go run genid.go --help
 
 usage: main [-h|--help] [-c|--calibrate] [-r|--refill] [-i|--info] [--initial
             <integer>] [--total <integer>] [-t|--type "<value>"]
@@ -37,7 +37,7 @@ Arguments:
   -t  --type       Type of id to generate (alphanum, num). Default alphanum.
                    Default: alphanum
 
-go run genid.go --info
+$ go run genid.go --info
 
 Genid Id Generation System
 Status: Calibrated
@@ -58,13 +58,13 @@ go run genid.go -c --initial 100000000 --total 1000 --type num
 ### Generate Id
 ```
 -- If type num
-go run genid.go 
+$ go run genid.go 
 
 Genid Id Genertion System
 id generated is 100000061
 
 -- If type alphanum
-go run genid.go 
+$ go run genid.go 
 
 Genid Id Genertion System
 id generated is 1njck4
