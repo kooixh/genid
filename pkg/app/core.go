@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	c "github.com/kooixh/genid/pkg/constants"
@@ -56,13 +57,13 @@ func GenerateNewId(idChannel chan string, refillChannel chan int) {
 }
 
 func Calibrate(cal CalibrationSettings, refillChannel chan int) {
-	redis.Set(c.OffsetKey, cal.Offset)
-	redis.Set(c.InitialKey, cal.Initial)
-	redis.Set(c.TotalKey, cal.Total)
-	redis.Set(c.GeneratorTypeKey, cal.IdType)
+	bytes, err := json.Marshal(cal)
+	if err != nil {
+		refillChannel <- c.CalibrationErrorJsonMarshall
+	}
+	redis.Set(c.CalibratedSettings, string(bytes))
 	redis.Set(c.CalibratedKey, true)
 	go Refill(refillChannel)
-
 }
 
 func Refill(refillChannel chan int) {
@@ -73,7 +74,6 @@ func Refill(refillChannel chan int) {
 		return
 	}
 	rawIds := utils.GenerateNewIdSet(settings.Total, settings.Offset, settings.Initial)
-
 	var generator g.Generator
 	if settings.IdType == c.GeneratorTypeAlphaNum {
 		generator = new(g.AlphaNumericIdGenerator)
@@ -84,7 +84,6 @@ func Refill(refillChannel chan int) {
 		refillChannel <- c.RedisErrorUnknownTypeCode
 		return
 	}
-
 	generatedIds := generator.Generate(rawIds)
 	for _, elem := range generatedIds {
 		redis.RPush(c.IdListKey, elem)
@@ -104,7 +103,6 @@ func ReturnAppInfo() (*CoreInfo, error) {
 	status := redis.Get(c.CalibratedKey)
 	var statValue string
 	if status.Err() != nil {
-
 		statValue = c.NotCalibrated
 	} else {
 		statValue = c.Calibrated
@@ -128,18 +126,19 @@ func ReturnAppInfo() (*CoreInfo, error) {
 	return info, nil
 }
 
-func retrieveCalibrationSettings() (*CalibrationSettings, error){
-	offset, errOffset := redis.Get(c.OffsetKey).Int()
-	total, errTotal := redis.Get(c.TotalKey).Int()
-	initial, errInitial := redis.Get(c.InitialKey).Int()
-	generatorType := redis.Get(c.GeneratorTypeKey).Val()
-	if errOffset != nil || errTotal != nil || errInitial != nil {
+func retrieveCalibrationSettings() (*CalibrationSettings, error) {
+	var settings CalibrationSettings
+	settingsJson := redis.Get(c.CalibratedSettings)
+	if settingsJson.Err() != nil {
 		return nil, errors.New("unable to retrieve calibration settings from Redis")
 	}
-	return &CalibrationSettings{
-		Initial: initial,
-		Offset: offset,
-		Total: total,
-		IdType: generatorType,
-	}, nil
+	bytes, bytesErr := settingsJson.Bytes()
+	if bytesErr != nil {
+		return nil, errors.New("unable to retrieve bytes[] settings from Redis")
+	}
+	err := json.Unmarshal(bytes, &settings)
+	if err != nil {
+		return nil, errors.New("unable to Marshal settings")
+	}
+	return &settings, nil
 }

@@ -6,13 +6,12 @@ const RedisPass = ""
 const RedisDBId = 0
 const RedisErrorCode = 2
 const RedisErrorUnknownTypeCode = 3
+const CalibrationErrorJsonMarshall = 4
 
 const OffsetKey = "offset"
-const TotalKey = "total"
-const InitialKey = "initial"
 const IdListKey = "ids_list"
-const GeneratorTypeKey = "generator_type"
 const CalibratedKey = "calibration_done"
+const CalibratedSettings = "calibration_settings"
 const Calibrated = "Calibrated"
 const NotCalibrated = "Not Calibrated"
 const GeneratorTypeAlphaNum = "alphanum"
