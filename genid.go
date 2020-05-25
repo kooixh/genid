@@ -36,6 +36,7 @@ func main() {
 
 	refillChannel := make(chan int)
 	if *calibrate {
+		fmt.Println("Starting calibration")
 		settings := core.CalibrationSettings{
 			Initial: *initial,
 			Offset: c.InitialOffset,
@@ -49,12 +50,13 @@ func main() {
 		}
 		core.Calibrate(settings, refillChannel)
 		exit := <-refillChannel
+		fmt.Println("Calibration completed")
 		os.Exit(exit)
 	} else if *refill {
-		fmt.Println("starting refill")
+		fmt.Println("Starting refill")
 		go core.Refill(refillChannel)
 		exit := <-refillChannel
-		fmt.Println("refill done")
+		fmt.Println("Refill done")
 		os.Exit(exit)
 	} else if *info {
 		appInfo, err := core.ReturnAppInfo()
