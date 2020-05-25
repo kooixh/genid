@@ -45,3 +45,7 @@ func LPop(key string) *r.StringCmd {
 func Length(key string) *r.IntCmd {
 	return client.LLen(ctx, key)
 }
+
+func Peek(key string) *r.StringSliceCmd {
+	return client.LRange(ctx, key, 0, 0)
+}
