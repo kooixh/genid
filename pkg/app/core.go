@@ -94,12 +94,17 @@ func Refill(refillChannel chan int) {
 
 }
 
+func CheckIsCalibrated() bool {
+	return redis.Get(c.CalibratedKey).Err() == nil
+}
+
 func ReturnAppInfo() (*CoreInfo, error) {
 	var info *CoreInfo
 	info = new(CoreInfo)
 	status := redis.Get(c.CalibratedKey)
 	var statValue string
 	if status.Err() != nil {
+
 		statValue = c.NotCalibrated
 	} else {
 		statValue = c.Calibrated

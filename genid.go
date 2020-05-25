@@ -54,6 +54,10 @@ func main() {
 		os.Exit(exit)
 	} else if *refill {
 		fmt.Println("Starting refill")
+		if !core.CheckIsCalibrated() {
+			fmt.Println("Genid is not calibrated, calibrate before using")
+			os.Exit(1)
+		}
 		go core.Refill(refillChannel)
 		exit := <-refillChannel
 		fmt.Println("Refill done")
@@ -76,7 +80,10 @@ func main() {
 		}
 		os.Exit(0)
 	}
-
+	if !core.CheckIsCalibrated() {
+		fmt.Println("Genid is not calibrated, calibrate before using")
+		os.Exit(1)
+	}
 	idChannel := make(chan string)
 	go core.GenerateNewId(idChannel, refillChannel)
 	fmt.Println("id generated is " + <-idChannel)
