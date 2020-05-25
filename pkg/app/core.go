@@ -39,7 +39,7 @@ func (cal *CalibrationSettings) Validate() (bool, string) {
 func GenerateNewId(refillChannel chan int) *string {
 	ids := redis.LPop(c.IdListKey)
 	if ids.Err() != nil {
-		refillChannel <- 0
+		close(refillChannel)
 		return nil
 	}
 	id := ids.Val()
@@ -55,7 +55,7 @@ func checkForRefill(refillChannel chan int) {
 	if int(redis.Length(c.IdListKey).Val()) < refillThreshold {
 		go Refill(refillChannel)
 	} else {
-		refillChannel <- 0
+		close(refillChannel)
 	}
 }
 
