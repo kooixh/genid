@@ -36,15 +36,18 @@ func (cal *CalibrationSettings) Validate() (bool, string) {
 	return true, ""
 }
 
-func GenerateNewId(idChannel chan string, refillChannel chan int) {
+func GenerateNewId(refillChannel chan int) *string {
 	ids := redis.LPop(c.IdListKey)
 	if ids.Err() != nil {
-		idChannel <- ""
 		refillChannel <- 0
-		return
+		return nil
 	}
-	idChannel <- ids.Val()
+	id := ids.Val()
+	go checkForRefill(refillChannel)
+	return &id
+}
 
+func checkForRefill(refillChannel chan int) {
 	refillThreshold, err := redis.Get(c.IdListKey).Int()
 	if err != nil {
 		refillThreshold = 10
@@ -67,7 +70,6 @@ func Calibrate(cal CalibrationSettings, refillChannel chan int) {
 }
 
 func Refill(refillChannel chan int) {
-
 	settings, err := retrieveCalibrationSettings()
 	if err != nil {
 		refillChannel <- c.RedisErrorCode
@@ -90,7 +92,6 @@ func Refill(refillChannel chan int) {
 	}
 	redis.Set(c.OffsetKey, settings.Offset + 1)
 	refillChannel <- 0
-
 }
 
 func CheckIsCalibrated() bool {
